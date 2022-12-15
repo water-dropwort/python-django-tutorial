@@ -1,0 +1,12 @@
+<html>
+  <head>
+    <title>{% block pagetitle %}{% endblock %} | Polls</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+  </head>
+  <body>
+    <div class="page-title">{% block headertitle %}{% endblock %}</div>
+    {% block content %}
+    {% endblock %}
+  </body>
+</html>

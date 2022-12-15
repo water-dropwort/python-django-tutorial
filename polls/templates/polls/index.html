@@ -1,10 +1,13 @@
-{% load static %}
-<link rel="stylesheet" href="{% static 'polls/style.css' %}">
+{% extends "polls/base.html" %}
 
+{% block pagetitle %}Home{% endblock %}
+{% block headertitle %}List of Question{% endblock %}
+
+{% block content %}
 {% if latest_question_list %}
 <ul>
   {% for question in latest_question_list %}
-  <li>
+  <li class="list-item">
     <!-- To use href like below, app_name variable is set to "testpolls". -->
     <a href="{% url 'testpolls:detail' question.id %}">{{ question.question_text }}</a>
   </li>
@@ -13,3 +16,4 @@
 {% else %}
 <p>No polls are available.</p>
 {% endif %}
+{% endblock %}

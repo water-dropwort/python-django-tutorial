@@ -1,9 +1,17 @@
-<h1>{{ question.question_text }}</h1>
+{% extends "polls/base.html" %}
 
+{% block pagetitle %}{{question.question_text}}{% endblock %}
+{% block headertitle %}Result:{{question.question_text}}{% endblock %}
+
+{% block content %}
 <ul>
   {% for choice in question.choice_set.all %}
-  <li>{{ choice.choice_text }} -- {{choice.votes }} vote{{choice.votes|pluralize}}</li>
+  <li class="list-item">{{ choice.choice_text }} -- {{choice.votes }} vote{{choice.votes|pluralize}}</li>
   {% endfor %}
 </ul>
 
-<a href="{% url 'testpolls:detail' question.id %}">Vote again?</a>
+<div>
+  <button class="flatbutton" onclick="location.href='{% url 'testpolls:detail' question.id %}'">Vote again</button>
+  <button class="flatbutton" onclick="location.href='{% url 'testpolls:index' %}'">Back to Home</button>
+</div>
+{% endblock %}
