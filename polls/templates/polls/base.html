@@ -5,7 +5,18 @@
     <link rel="stylesheet" href="{% static 'polls/style.css' %}">
   </head>
   <body>
-    <div class="page-title">{% block headertitle %}{% endblock %}</div>
+    <div class="header">
+      <div class="header-title">
+      {% block headertitle %}{% endblock %}
+      </div>
+      {% if user.is_authenticated %}
+      <div class="userinfo">
+        Hello, {{user.username}}
+        <button class="flatminibutton" onclick="location.href='{% url 'testpolls:logout' %}'">Logout</button>
+      </div>
+      {% endif %}
+    </div>
+
     {% block content %}
     {% endblock %}
   </body>

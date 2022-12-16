@@ -6,3 +6,6 @@ This is a web app that I implemented with reference to the django tutorial part 
 - [Part5](https://docs.djangoproject.com/en/4.1/intro/tutorial05/)
 - [Part6](https://docs.djangoproject.com/en/4.1/intro/tutorial06/)
 - [Part7](https://docs.djangoproject.com/en/4.1/intro/tutorial07/)
+
+# Function addition
+- login page : Need login to use polls app.

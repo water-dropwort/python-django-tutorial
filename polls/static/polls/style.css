@@ -2,8 +2,14 @@ body {
     background : antiquewhite;
 }
 
-.page-title {
+.header {
     background : forestgreen;
+    display : flex;
+    justify-content : space-between;
+    vertical-align : middle;
+}
+
+.header-title {
     color : white;
     font-size : 1.5em;
     padding : 0.2em;
@@ -33,4 +39,26 @@ body {
 
 .flatbutton:hover {
     box-shadow: none;
+}
+
+.flatminibutton {
+    color : black;
+    background : palegreen;
+    font-size : 1.0em;
+    padding : 0.2em 0.5em;
+    border-radius: 0.5em;
+    border : none;
+    box-shadow: none;
+    cursor : pointer;
+}
+
+.flatminibutton:hover {
+    opacity : 0.8;
+}
+
+.userinfo {
+    color : white;
+    font-size : 1.0em;
+    margin-top : 0.5em;
+    margin-right : 0.5em;
 }
