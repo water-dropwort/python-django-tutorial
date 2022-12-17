@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
-from .models import Question, Choice
+from .models import Question, Choice,Answer
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
@@ -40,6 +40,21 @@ def vote(request, question_id):
                           "question" : question,
                           "error_message": "You didn't select a choice.",})
     else:
-        selected_choice.votes += 1
-        selected_choice.save()
+        users_answer = Answer.objects.filter(user=request.user, question=question)
+        # already answered with other choice
+        if len(users_answer) >= 1 and users_answer[0].choice.id != selected_choice.id:
+            users_answer[0].choice.votes -= 1
+            users_answer[0].choice.save()
+            users_answer[0].choice = selected_choice
+            users_answer[0].save()
+            selected_choice.votes += 1
+            selected_choice.save()
+        # first answer
+        elif len(users_answer) == 0:
+            Answer(user=request.user, question=question, choice=selected_choice).save()
+            selected_choice.votes += 1
+            selected_choice.save()
+        # already answered with same choice
+        #else:
+            # nothing to do
         return HttpResponseRedirect(reverse("testpolls:results", args=(question.id,)))
