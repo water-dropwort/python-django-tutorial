@@ -26,6 +26,11 @@ body {
     font-weight : bold;
 }
 
+.warning-message {
+    color : orangered;
+    font-weight : bold;
+}
+
 .flatbutton {
     color : black;
     background : palegreen;

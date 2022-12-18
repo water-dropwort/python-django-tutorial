@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, Http404
 from .models import Question, Choice,Answer
 from django.urls import reverse
 from django.views import generic
@@ -18,12 +18,24 @@ class IndexView(PollsLoginRequiredMixin, generic.ListView):
     def get_queryset(self):
         return Question.objects.filter(pub_date__lte=timezone.now()).order_by("-pub_date")[:5]
 
-class DetailView(PollsLoginRequiredMixin, generic.DetailView):
-    model = Question
-    template_name = "polls/details.html"
-
-    def get_queryset(self):
-        return Question.objects.filter(pub_date__lte=timezone.now())
+@login_required(redirect_field_name=None, login_url="testpolls:login")
+def detail(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    # future question
+    if question.pub_date > timezone.now():
+        raise Http404("This question has not been published.")
+    users_answer = Answer.objects.filter(user=request.user, question=question)
+    if len(users_answer) >= 1:
+        return render(request, "polls/details.html",
+                      {
+                          "question" : question,
+                          "current_choice" : users_answer[0].choice
+                      })
+    else:
+        return render(request, "polls/details.html",
+                      {
+                          "question" : question,
+                      })
 
 class ResultsView(PollsLoginRequiredMixin, generic.DetailView):
     model = Question

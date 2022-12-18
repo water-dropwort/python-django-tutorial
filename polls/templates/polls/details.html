@@ -11,13 +11,24 @@
     {% if error_message %}
     <p class="error-message">{{ error_message }}</p>
     {% endif %}
+    {% if current_choice %}
+    <p class="warning-message">You already answered this question.</p>
+    <p class="warning-message">Your current choice is {{current_choice.choice_text }} </p>
+    <p class="warning-message">Do you change your answer?</p>
+    {% endif %}
+
     {% for choice in question.choice_set.all %}
+    {% if current_choice and current_choice.id == choice.id %}
+    <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{choice.id}}" checked>
+    {% else %}
     <input type="radio" name="choice" id="choice{{ forloop.counter }}" value="{{choice.id}}">
+    {% endif %}
     <label for="choice{{ forloop.counter}}" class="list-item">{{ choice.choice_text}}</label><br>
     {% endfor %}
   </fieldset>
   <div>
     <input type="submit" value="Vote" class="flatbutton"/>
+    <button type="button" class="flatbutton" onclick="location.href='{% url 'testpolls:index' %}'">Cancel</button>
   </div>
 </form>
 {% endblock %}
