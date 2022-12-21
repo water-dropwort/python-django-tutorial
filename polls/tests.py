@@ -2,12 +2,15 @@ import datetime
 from django.test import TestCase
 from django.utils import timezone
 from django.urls import reverse
-from .models import Question
+from .models import Question,Choice
 from django.contrib.auth.models import User
 
 def create_question(question_text, days):
     time = timezone.now() + datetime.timedelta(days=days)
     return Question.objects.create(question_text=question_text, pub_date=time)
+
+def create_choice(choice_text, question):
+    return Choice.objects.create(question=question, choice_text=choice_text)
 
 class QuestionModelTests(TestCase):
     def tests_was_published_recently_with_future_question(self):
@@ -82,5 +85,75 @@ class QuestionDetailViewTests(TestCase):
 
     def test_no_authenticated(self):
         self.client.logout()
-        response = self.client.get(reverse("testpolls:index"))
+        question = create_question(question_text="Dummy", days=-30)
+        response = self.client.get(reverse("testpolls:detail", args=(question.id,)))
+        self.assertEqual(response.url, reverse("testpolls:login"))
+
+class QuestionResultViewTests(TestCase):
+    def test_future_question(self):
+        self.client.force_login(User.objects.create_user("testuser"))
+        future_question = create_question(question_text="Future question.", days=5)
+        url = reverse("testpolls:results", args=(future_question.id,))
+        response = self.client.get(url)
+        self.assertContains(response, future_question.question_text)
+
+    def test_past_question(self):
+        self.client.force_login(User.objects.create_user("testuser"))
+        past_question = create_question(question_text="Past Question.", days=-5)
+        url = reverse("testpolls:results", args=(past_question.id,))
+        response = self.client.get(url)
+        self.assertContains(response, past_question.question_text)
+
+    def test_no_authenticated(self):
+        self.client.logout()
+        question = create_question(question_text="Dummy", days=-30)
+        response = self.client.get(reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(response.url, reverse("testpolls:login"))
+
+class QuestionVoteTests(TestCase):
+    def test_first_vote(self):
+        self.client.force_login(User.objects.create_user("testuser"))
+        question = create_question("Are you OK?", days=-1)
+        choice1 = create_choice("Yes", question)
+        choice2 = create_choice("No", question)
+        response = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice1.id})
+        self.assertEqual(response.url, reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(question.choice_set.get(pk=choice1.id).votes, 1)
+        self.assertEqual(question.choice_set.get(pk=choice2.id).votes, 0)
+
+    def test_change_choice(self):
+        self.client.force_login(User.objects.create_user("testuser"))
+        question = create_question("Are you OK?", days=-1)
+        choice1 = create_choice("Yes", question)
+        choice2 = create_choice("No", question)
+        response = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice1.id})
+        self.assertEqual(response.url, reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(question.choice_set.get(pk=choice1.id).votes, 1)
+        self.assertEqual(question.choice_set.get(pk=choice2.id).votes, 0)
+        # choice1 --> choice2
+        response2 = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice2.id})
+        self.assertEqual(response.url, reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(question.choice_set.get(pk=choice1.id).votes, 0)
+        self.assertEqual(question.choice_set.get(pk=choice2.id).votes, 1)
+
+    def test_not_change_choice(self):
+        self.client.force_login(User.objects.create_user("testuser"))
+        question = create_question("Are you OK?", days=-1)
+        choice1 = create_choice("Yes", question)
+        choice2 = create_choice("No", question)
+        response = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice1.id})
+        self.assertEqual(response.url, reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(question.choice_set.get(pk=choice1.id).votes, 1)
+        self.assertEqual(question.choice_set.get(pk=choice2.id).votes, 0)
+        # choice1 --> choice1
+        response2 = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice1.id})
+        self.assertEqual(response.url, reverse("testpolls:results", args=(question.id,)))
+        self.assertEqual(question.choice_set.get(pk=choice1.id).votes, 1)
+        self.assertEqual(question.choice_set.get(pk=choice2.id).votes, 0)
+
+    def test_no_authenticated(self):
+        self.client.logout()
+        question = create_question(question_text="Dummy", days=-30)
+        choice1 = create_choice("Yes", question)
+        response = self.client.post(reverse("testpolls:vote",args=(question.id,)), {"choice":choice1.id})
         self.assertEqual(response.url, reverse("testpolls:login"))
